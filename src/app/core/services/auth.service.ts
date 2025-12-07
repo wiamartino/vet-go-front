@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
@@ -12,11 +13,14 @@ export class AuthService {
   private authUrl = environment.authUrl;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private isBrowser: boolean;
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) platformId: Object
   ) {
+    this.isBrowser = isPlatformBrowser(platformId);
     // Check if user is already logged in
     const token = this.getToken();
     if (token) {
@@ -54,17 +58,24 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('jwt_token');
+    if (this.isBrowser) {
+      localStorage.removeItem('jwt_token');
+    }
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem('jwt_token');
+    if (this.isBrowser) {
+      return localStorage.getItem('jwt_token');
+    }
+    return null;
   }
 
   setToken(token: string): void {
-    localStorage.setItem('jwt_token', token);
+    if (this.isBrowser) {
+      localStorage.setItem('jwt_token', token);
+    }
   }
 
   isAuthenticated(): boolean {

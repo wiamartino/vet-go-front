@@ -131,7 +131,10 @@ export class PetFormComponent implements OnInit {
   onSubmit(): void {
     if (this.petForm.invalid) return;
     this.isLoading = true;
-    const petData: Pet = this.petForm.value;
+    const petData: Pet = {
+      ...this.petForm.value,
+      client_id: Number(this.petForm.value.client_id)
+    };
     const operation = this.isEditMode
       ? this.petService.updatePet(this.petId!, petData)
       : this.petService.createPet(petData);

@@ -1,0 +1,92 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="rounded-md bg-red-50 p-4">
+    <p class="text-sm text-red-800">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Client Details -->
+  <div *ngIf="!isLoading && !errorMessage && client">
+    <!-- Header -->
+    <div class="md:flex md:items-center md:justify-between mb-8">
+      <div class="flex-1 min-w-0">
+        <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+          {{ client.first_name }} {{ client.last_name }}
+        </h2>
+      </div>
+      <div class="mt-4 flex md:mt-0 md:ml-4">
+        <button
+          [routerLink]="['/clients', client.client_id, 'edit']"
+          class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Edit
+        </button>
+        <button
+          (click)="deleteClient()"
+          class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Client Information -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Client Information</h3>
+      </div>
+      <div class="border-t border-gray-200">
+        <dl>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Email</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ client.email }}</dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Phone</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ client.phone }}</dd>
+          </div>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Address</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ client.address }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Pets Section -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Pets</h3>
+        <a
+          routerLink="/pets/new"
+          [queryParams]="{ client_id: client.client_id }"
+          class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Add Pet
+        </a>
+      </div>
+      <div class="border-t border-gray-200">
+        <ul *ngIf="pets.length > 0" class="divide-y divide-gray-200">
+          <li *ngFor="let pet of pets" class="px-4 py-4 sm:px-6 hover:bg-gray-50">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-indigo-600">{{ pet.name }}</p>
+                <p class="text-sm text-gray-500">{{ pet.species }} - {{ pet.breed }}</p>
+              </div>
+              <a [routerLink]="['/pets', pet.pet_id]" class="text-indigo-600 hover:text-indigo-900 text-sm">
+                View Details
+              </a>
+            </div>
+          </li>
+        </ul>
+        <div *ngIf="pets.length === 0" class="px-4 py-5 sm:px-6 text-center text-sm text-gray-500">
+          No pets registered for this client
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

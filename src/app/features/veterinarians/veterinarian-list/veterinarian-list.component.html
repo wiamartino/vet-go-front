@@ -1,0 +1,54 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-semibold text-gray-900">Veterinarians</h1>
+      <p class="mt-2 text-sm text-gray-700">List of all veterinarians in the clinic</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <a routerLink="/veterinarians/new" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+        Add Veterinarian
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Specialty</th>
+                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Phone</th>
+                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+                <th class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              <tr *ngFor="let vet of veterinarians" class="hover:bg-gray-50">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                  {{ vet.first_name }} {{ vet.last_name }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ vet.specialty }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ vet.phone }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ vet.email }}</td>
+                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                  <a [routerLink]="['/veterinarians', vet.veterinarian_id]" class="text-indigo-600 hover:text-indigo-900 mr-4">View</a>
+                  <a [routerLink]="['/veterinarians', vet.veterinarian_id, 'edit']" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                </td>
+              </tr>
+              <tr *ngIf="veterinarians.length === 0">
+                <td colspan="5" class="py-8 text-center text-sm text-gray-500">No veterinarians found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

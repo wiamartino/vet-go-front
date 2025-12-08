@@ -34,7 +34,7 @@ export class AppointmentListComponent implements OnInit {
   appointments: Appointment[] = [];
   isLoading = true;
 
-  constructor(private appointmentService: AppointmentService) {}
+  constructor(private appointmentService: AppointmentService) { }
 
   ngOnInit(): void {
     this.appointmentService.getAllAppointments().subscribe({

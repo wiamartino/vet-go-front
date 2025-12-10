@@ -121,7 +121,7 @@ export class ClientService extends BaseStoreService<Client[]> {
           this.invalidateCache(`client_${id}`);
           // Update local state
           const currentClients = this.clientsSubject.value;
-          const index = currentClients.findIndex(c => c.id === id);
+          const index = currentClients.findIndex(c => c.client_id === id);
           if (index !== -1) {
             currentClients[index] = updatedClient;
             this.clientsSubject.next([...currentClients]);
@@ -147,7 +147,7 @@ export class ClientService extends BaseStoreService<Client[]> {
           this.invalidateCache(`client_${id}`);
           // Update local state
           const currentClients = this.clientsSubject.value;
-          this.clientsSubject.next(currentClients.filter(c => c.id !== id));
+          this.clientsSubject.next(currentClients.filter(c => c.client_id !== id));
           this.loadingService.setLoading(`client_delete_${id}`, false);
         })
       );

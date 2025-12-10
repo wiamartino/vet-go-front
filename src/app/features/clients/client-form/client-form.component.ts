@@ -18,6 +18,7 @@ export class ClientFormComponent implements OnInit {
   isEditMode = false;
   clientId?: number;
   isLoading = false;
+  errorMessage = '';
 
   constructor(
     private fb: FormBuilder,

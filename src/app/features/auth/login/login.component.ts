@@ -15,6 +15,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
+  errorMessage = '';
 
   constructor(
     private fb: FormBuilder,

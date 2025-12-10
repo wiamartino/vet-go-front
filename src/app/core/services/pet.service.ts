@@ -170,7 +170,7 @@ export class PetService extends BaseStoreService<Pet[]> {
 
           // Update local state
           const currentPets = this.petsSubject.value;
-          const index = currentPets.findIndex(p => p.id === id);
+          const index = currentPets.findIndex(p => p.pet_id === id);
           if (index !== -1) {
             currentPets[index] = updatedPet;
             this.petsSubject.next([...currentPets]);
@@ -180,7 +180,7 @@ export class PetService extends BaseStoreService<Pet[]> {
           if (updatedPet.client_id && this.petsByClientCache.has(updatedPet.client_id)) {
             const subject = this.petsByClientCache.get(updatedPet.client_id)!;
             const clientPets = subject.value;
-            const clientIndex = clientPets.findIndex(p => p.id === id);
+            const clientIndex = clientPets.findIndex(p => p.pet_id === id);
             if (clientIndex !== -1) {
               clientPets[clientIndex] = updatedPet;
               subject.next([...clientPets]);
@@ -197,7 +197,7 @@ export class PetService extends BaseStoreService<Pet[]> {
    */
   deletePet(id: number): Observable<void> {
     // Get pet before deletion to know client_id
-    const petToDelete = this.petsSubject.value.find(p => p.id === id);
+    const petToDelete = this.petsSubject.value.find(p => p.pet_id === id);
 
     this.loadingService.setLoading(`pet_delete_${id}`, true);
 
@@ -213,12 +213,12 @@ export class PetService extends BaseStoreService<Pet[]> {
 
           // Update local state
           const currentPets = this.petsSubject.value;
-          this.petsSubject.next(currentPets.filter(p => p.id !== id));
+          this.petsSubject.next(currentPets.filter(p => p.pet_id !== id));
 
           // Update client-specific cache
           if (petToDelete?.client_id && this.petsByClientCache.has(petToDelete.client_id)) {
             const subject = this.petsByClientCache.get(petToDelete.client_id)!;
-            subject.next(subject.value.filter(p => p.id !== id));
+            subject.next(subject.value.filter(p => p.pet_id !== id));
           }
 
           this.loadingService.setLoading(`pet_delete_${id}`, false);

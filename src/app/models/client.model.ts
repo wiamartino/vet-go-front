@@ -1,3 +1,5 @@
+import { Pet } from "./pet.model";
+
 export interface Client {
   client_id?: number;
   first_name: string;
@@ -5,4 +7,5 @@ export interface Client {
   phone: string;
   email: string;
   address: string;
+  pets?: Pet[];
 }

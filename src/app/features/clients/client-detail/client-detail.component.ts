@@ -29,7 +29,7 @@ export class ClientDetailComponent implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.loadClient(id);
-      this.loadClientPets(id);
+      // this.loadClientPets(id);
     }
   }
 
@@ -37,6 +37,7 @@ export class ClientDetailComponent implements OnInit {
     this.clientService.getClientById(id).subscribe({
       next: (client) => {
         this.client = client;
+        this.pets = client.pets || [];
         this.isLoading = false;
       },
       error: (error) => {

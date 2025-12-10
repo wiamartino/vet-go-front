@@ -1,12 +1,24 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { NotificationService, Notification } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-notification',
   standalone: true,
   imports: [CommonModule],
+  animations: [
+    trigger('slideIn', [
+      transition(':enter', [
+        style({ transform: 'translateX(100%)', opacity: 0 }),
+        animate('300ms ease-out', style({ transform: 'translateX(0)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 }))
+      ])
+    ])
+  ],
   template: `
     <div class="notification-container">
       <div 

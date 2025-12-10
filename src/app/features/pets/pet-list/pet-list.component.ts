@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PetService } from '../../../core/services/pet.service';
 import { ClientService } from '../../../core/services/client.service';
+import { LoadingService } from '../../../core/services/loading.service';
 import { Pet, Client } from '../../../models';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, takeUntil, combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-pet-list',
@@ -77,36 +78,68 @@ export class PetListComponent implements OnInit {
   clients: Client[] = [];
   clientMap = new Map<number, string>();
   searchTerm = '';
-  isLoading = true;
+  isLoading = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private petService: PetService,
-    private clientService: ClientService
+    private clientService: ClientService,
+    private loadingService: LoadingService
   ) {}
 
   ngOnInit(): void {
+    // Subscribe to pets observable
+    this.petService.pets$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(pets => {
+        this.pets = pets;
+        this.onSearch();
+      });
+
+    // Subscribe to clients observable
+    this.clientService.clients$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(clients => {
+        this.clients = clients;
+        this.clientMap.clear();
+        clients.forEach(c => {
+          this.clientMap.set(c.client_id!, `${c.first_name} ${c.last_name}`);
+        });
+      });
+
+    // Monitor loading states
+    combineLatest([
+      this.loadingService.getLoading$('pets_list'),
+      this.loadingService.getLoading$('clients_list')
+    ]).pipe(takeUntil(this.destroy$))
+      .subscribe(([petsLoading, clientsLoading]) => {
+        this.isLoading = petsLoading || clientsLoading;
+      });
+
+    // Load data (uses cache if available)
     this.loadData();
   }
 
-  loadData(): void {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadData(forceRefresh = false): void {
+    // Both services will manage their own loading states
     forkJoin({
-      pets: this.petService.getAllPets(),
-      clients: this.clientService.getAllClients()
+      pets: this.petService.getAllPets(forceRefresh),
+      clients: this.clientService.getAllClients(forceRefresh)
     }).subscribe({
-      next: (data) => {
-        this.pets = data.pets;
-        this.filteredPets = data.pets;
-        this.clients = data.clients;
-        this.clients.forEach(c => {
-          this.clientMap.set(c.client_id!, `${c.first_name} ${c.last_name}`);
-        });
-        this.isLoading = false;
-      },
       error: (error) => {
         console.error('Error loading data:', error);
-        this.isLoading = false;
       }
     });
+  }
+
+  refresh(): void {
+    // Force refresh bypasses cache for both services
+    this.loadData(true);
   }
 
   onSearch(): void {
@@ -114,12 +147,9 @@ export class PetListComponent implements OnInit {
       this.filteredPets = this.pets;
       return;
     }
-    const term = this.searchTerm.toLowerCase();
-    this.filteredPets = this.pets.filter(pet =>
-      pet.name.toLowerCase().includes(term) ||
-      pet.species.toLowerCase().includes(term) ||
-      pet.breed.toLowerCase().includes(term)
-    );
+    
+    // Use service's local search for better performance
+    this.filteredPets = this.petService.searchPetsLocally(this.searchTerm);
   }
 
   getOwnerName(clientId: number): string {
@@ -128,10 +158,10 @@ export class PetListComponent implements OnInit {
 
   deletePet(id: number): void {
     if (!confirm('Are you sure you want to delete this pet?')) return;
+    
     this.petService.deletePet(id).subscribe({
       next: () => {
-        this.pets = this.pets.filter(p => p.pet_id !== id);
-        this.onSearch();
+        // State is automatically updated by the service
       },
       error: (error) => {
         alert('Failed to delete pet');

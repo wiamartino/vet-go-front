@@ -1,6 +1,6 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn, HttpEvent } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, switchMap, throwError, BehaviorSubject, filter, take } from 'rxjs';
+import { Observable, catchError, switchMap, throwError, BehaviorSubject, filter, take } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 // Queue for requests waiting for token refresh
@@ -11,7 +11,7 @@ const refreshTokenSubject = new BehaviorSubject<string | null>(null);
  * Auth Interceptor
  * Adds JWT token to requests and handles token refresh on 401 errors
  */
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+export const authInterceptor: HttpInterceptorFn = (req, next): Observable<HttpEvent<unknown>> => {
   const authService = inject(AuthService);
   
   // Skip auth header for auth endpoints
@@ -43,7 +43,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 /**
  * Add authorization token to request
  */
-function addToken(request: any, token: string) {
+function addToken(request: HttpRequest<unknown>, token: string) {
   return request.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`
@@ -54,7 +54,7 @@ function addToken(request: any, token: string) {
 /**
  * Handle 401 Unauthorized error by refreshing token
  */
-function handle401Error(request: any, next: any, authService: AuthService) {
+function handle401Error(request: HttpRequest<unknown>, next: HttpHandlerFn, authService: AuthService) {
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);

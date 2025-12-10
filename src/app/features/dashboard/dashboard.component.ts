@@ -1,12 +1,13 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { forkJoin, Subject, takeUntil, combineLatest } from 'rxjs';
+import { forkJoin, combineLatest } from 'rxjs';
 import { ClientService } from '../../core/services/client.service';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { VaccinationService } from '../../core/services/vaccination.service';
 import { SurgeryService } from '../../core/services/surgery.service';
 import { LoadingService } from '../../core/services/loading.service';
+import { CancellableComponent } from '../../core/utils/request-cancellation.util';
 
 interface DashboardStats {
   totalClients: number;
@@ -22,7 +23,7 @@ interface DashboardStats {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent extends CancellableComponent implements OnInit {
   stats: DashboardStats = {
     totalClients: 0,
     appointmentsToday: 0,
@@ -32,7 +33,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
   isLoading = false;
   error: string | null = null;
-  private destroy$ = new Subject<void>();
 
   // Track loading states for individual sections
   loadingStates = {
@@ -48,41 +48,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private vaccinationService: VaccinationService,
     private surgeryService: SurgeryService,
     public loadingService: LoadingService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.loadDashboardStats();
     this.subscribeToLoadingStates();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   /**
-   * Subscribe to loading states from services
+   * Subscribe to loading states from services (auto-cancelled on destroy)
    */
   subscribeToLoadingStates(): void {
     // Subscribe to individual loading states
-    this.loadingService.getLoading$('clients_list')
-      .pipe(takeUntil(this.destroy$))
+    this.autoCancel(this.loadingService.getLoading$('clients_list'))
       .subscribe(loading => this.loadingStates.clients = loading);
 
-    this.loadingService.getLoading$('appointments_range')
-      .pipe(takeUntil(this.destroy$))
+    this.autoCancel(this.loadingService.getLoading$('appointments_range'))
       .subscribe(loading => this.loadingStates.appointments = loading);
 
     // Update overall loading state
-    combineLatest([
+    this.autoCancel(combineLatest([
       this.loadingService.getLoading$('clients_list'),
       this.loadingService.getLoading$('appointments_range')
-    ]).pipe(takeUntil(this.destroy$))
-      .subscribe(([clients, appointments]) => {
-        this.isLoading = clients || appointments;
-      });
+    ])).subscribe(([clients, appointments]) => {
+      this.isLoading = clients || appointments;
+    });
   }
-
   /**
    * Load dashboard statistics using cached data
    */
@@ -93,14 +86,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    forkJoin({
+    this.autoCancel(forkJoin({
       clients: this.clientService.getAllClients(forceRefresh),
       appointments: this.appointmentService.getAppointmentsByDateRange(today, tomorrow, forceRefresh),
       vaccinations: this.vaccinationService.getDueVaccinations(),
       surgeries: this.surgeryService.getSurgeriesByStatus('scheduled')
-    }).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+    })).subscribe({
       next: (data) => {
         this.stats = {
           totalClients: data.clients.length,

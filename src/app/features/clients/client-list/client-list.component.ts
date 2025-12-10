@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
 import { ClientService } from '../../../core/services/client.service';
 import { LoadingService } from '../../../core/services/loading.service';
 import { Client } from '../../../models';
+import { CancellableComponent } from '../../../core/utils/request-cancellation.util';
 
 @Component({
   selector: 'app-client-list',
@@ -14,36 +14,34 @@ import { Client } from '../../../models';
   templateUrl: './client-list.component.html',
   styleUrls: ['./client-list.component.scss']
 })
-export class ClientListComponent implements OnInit, OnDestroy {
+export class ClientListComponent extends CancellableComponent implements OnInit {
   clients: Client[] = [];
   filteredClients: Client[] = [];
   searchTerm = '';
   isLoading = false;
   errorMessage = '';
-  private destroy$ = new Subject<void>();
 
   constructor(
     private clientService: ClientService,
     private loadingService: LoadingService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
-    // Subscribe to clients observable for real-time updates
-    this.clientService.clients$
-      .pipe(takeUntil(this.destroy$))
+    // Subscribe to clients observable for real-time updates (auto-cancelled on destroy)
+    this.autoCancel(this.clientService.clients$)
       .subscribe(clients => {
         this.clients = clients;
         this.onSearch(); // Re-apply search filter
       });
 
-    // Subscribe to loading state
-    this.loadingService.getLoading$('clients_list')
-      .pipe(takeUntil(this.destroy$))
+    // Subscribe to loading state (auto-cancelled on destroy)
+    this.autoCancel(this.loadingService.getLoading$('clients_list'))
       .subscribe(loading => this.isLoading = loading);
 
-    // Subscribe to error state
-    this.clientService.state$
-      .pipe(takeUntil(this.destroy$))
+    // Subscribe to error state (auto-cancelled on destroy)
+    this.autoCancel(this.clientService.state$)
       .subscribe(state => {
         if (state.error) {
           this.errorMessage = state.error;
@@ -53,12 +51,6 @@ export class ClientListComponent implements OnInit, OnDestroy {
     // Load clients (uses cache if available)
     this.loadClients();
   }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   loadClients(forceRefresh = false): void {
     this.errorMessage = '';
     this.clientService.getAllClients(forceRefresh).subscribe({

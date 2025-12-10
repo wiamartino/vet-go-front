@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +6,8 @@ import { PetService } from '../../../core/services/pet.service';
 import { ClientService } from '../../../core/services/client.service';
 import { LoadingService } from '../../../core/services/loading.service';
 import { Pet, Client } from '../../../models';
-import { forkJoin, Subject, takeUntil, combineLatest } from 'rxjs';
+import { forkJoin, combineLatest } from 'rxjs';
+import { CancellableComponent } from '../../../core/utils/request-cancellation.util';
 
 @Component({
   selector: 'app-pet-list',
@@ -72,33 +73,32 @@ import { forkJoin, Subject, takeUntil, combineLatest } from 'rxjs';
     </div>
   `
 })
-export class PetListComponent implements OnInit {
+export class PetListComponent extends CancellableComponent implements OnInit {
   pets: Pet[] = [];
   filteredPets: Pet[] = [];
   clients: Client[] = [];
   clientMap = new Map<number, string>();
   searchTerm = '';
   isLoading = false;
-  private destroy$ = new Subject<void>();
 
   constructor(
     private petService: PetService,
     private clientService: ClientService,
     private loadingService: LoadingService
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
-    // Subscribe to pets observable
-    this.petService.pets$
-      .pipe(takeUntil(this.destroy$))
+    // Subscribe to pets observable (auto-cancelled on destroy)
+    this.autoCancel(this.petService.pets$)
       .subscribe(pets => {
         this.pets = pets;
         this.onSearch();
       });
 
-    // Subscribe to clients observable
-    this.clientService.clients$
-      .pipe(takeUntil(this.destroy$))
+    // Subscribe to clients observable (auto-cancelled on destroy)
+    this.autoCancel(this.clientService.clients$)
       .subscribe(clients => {
         this.clients = clients;
         this.clientMap.clear();
@@ -107,24 +107,17 @@ export class PetListComponent implements OnInit {
         });
       });
 
-    // Monitor loading states
-    combineLatest([
+    // Monitor loading states (auto-cancelled on destroy)
+    this.autoCancel(combineLatest([
       this.loadingService.getLoading$('pets_list'),
       this.loadingService.getLoading$('clients_list')
-    ]).pipe(takeUntil(this.destroy$))
-      .subscribe(([petsLoading, clientsLoading]) => {
-        this.isLoading = petsLoading || clientsLoading;
-      });
+    ])).subscribe(([petsLoading, clientsLoading]) => {
+      this.isLoading = petsLoading || clientsLoading;
+    });
 
     // Load data (uses cache if available)
     this.loadData();
   }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   loadData(forceRefresh = false): void {
     // Both services will manage their own loading states
     forkJoin({

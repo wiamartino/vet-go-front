@@ -1,10 +1,21 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, tap, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Client, ApiResponse } from '../../models';
 import { BaseStoreService } from './base-store.service';
 import { LoadingService } from './loading.service';
+
+/**
+ * Client Service
+ * 
+ * Retry Behavior:
+ * - GET requests: Automatically retried on network failures (408, 429, 500, 502, 503, 504)
+ * - POST/PUT requests: Retried only if marked as idempotent
+ * - DELETE requests: Never retried (safety measure)
+ * 
+ * All retry behavior is configured via the retry interceptor.
+ */
 
 @Injectable({
   providedIn: 'root'
@@ -122,10 +133,12 @@ export class ClientService extends BaseStoreService<Client[]> {
 
   /**
    * Delete client and invalidate caches
+   * Note: DELETE requests should not be retried automatically (handled by interceptor)
    */
   deleteClient(id: number): Observable<void> {
     this.loadingService.setLoading(`client_delete_${id}`, true);
 
+    // DELETE operations are automatically skipped by retry interceptor for safety
     return this.http.delete<void>(`${this.apiUrl}/${id}`)
       .pipe(
         tap(() => {

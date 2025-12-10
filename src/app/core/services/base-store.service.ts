@@ -1,9 +1,20 @@
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { tap, catchError, finalize } from 'rxjs/operators';
+import { HttpHeaders } from '@angular/common/http';
 
 export interface CacheConfig {
   ttl: number; // Time to live in milliseconds
   enabled: boolean;
+}
+
+/**
+ * Retry configuration for HTTP requests
+ */
+export interface RetryConfig {
+  maxRetries?: number;
+  retryDelay?: number;
+  idempotent?: boolean;
+  skipRetry?: boolean;
 }
 
 export interface CacheEntry<T> {
@@ -144,7 +155,8 @@ export abstract class BaseStoreService<T> {
   protected executeWithCache<D>(
     key: string,
     request: Observable<D>,
-    config: CacheConfig = this.defaultCacheConfig
+    config: CacheConfig = this.defaultCacheConfig,
+    retryConfig?: RetryConfig
   ): Observable<D> {
     // Check cache first
     if (this.isCacheValid(key, config)) {
@@ -155,6 +167,7 @@ export abstract class BaseStoreService<T> {
     }
 
     // Execute request and cache result
+    // Retry config is handled by retry interceptor via HTTP headers
     return request.pipe(
       tap(data => this.setCachedData(key, data)),
       catchError(error => {
@@ -170,11 +183,13 @@ export abstract class BaseStoreService<T> {
   protected executeWithLoading<D>(
     request: Observable<D>,
     onSuccess?: (data: D) => void,
-    onError?: (error: any) => void
+    onError?: (error: any) => void,
+    retryConfig?: RetryConfig
   ): Observable<D> {
     this.setLoading(true);
     this.setError(null);
 
+    // Retry config is handled by retry interceptor via HTTP headers
     return request.pipe(
       tap(data => {
         this.setLoading(false);
@@ -196,7 +211,8 @@ export abstract class BaseStoreService<T> {
   protected fetchWithCacheAndLoading<D>(
     key: string,
     request: Observable<D>,
-    config: CacheConfig = this.defaultCacheConfig
+    config: CacheConfig = this.defaultCacheConfig,
+    retryConfig?: RetryConfig
   ): Observable<D> {
     // Check cache first
     if (this.isCacheValid(key, config)) {
@@ -209,7 +225,32 @@ export abstract class BaseStoreService<T> {
     // Execute with loading state
     return this.executeWithLoading(
       request,
-      data => this.setCachedData(key, data)
+      data => this.setCachedData(key, data),
+      undefined,
+      retryConfig
     );
+  }
+
+  /**
+   * Helper method to apply retry configuration to HTTP headers
+   * Services can use this to configure retry behavior for specific requests
+   */
+  protected applyRetryConfig(headers: HttpHeaders = new HttpHeaders(), config: RetryConfig): HttpHeaders {
+    let updatedHeaders = headers;
+    
+    if (config.maxRetries !== undefined) {
+      updatedHeaders = updatedHeaders.set('X-Retry-Max', config.maxRetries.toString());
+    }
+    if (config.retryDelay !== undefined) {
+      updatedHeaders = updatedHeaders.set('X-Retry-Delay', config.retryDelay.toString());
+    }
+    if (config.skipRetry) {
+      updatedHeaders = updatedHeaders.set('X-No-Retry', 'true');
+    }
+    if (config.idempotent) {
+      updatedHeaders = updatedHeaders.set('X-Idempotent', 'true');
+    }
+    
+    return updatedHeaders;
   }
 }

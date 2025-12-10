@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ClientService } from '../../../core/services/client.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { Client } from '../../../models';
 
 @Component({
@@ -17,13 +18,13 @@ export class ClientFormComponent implements OnInit {
   isEditMode = false;
   clientId?: number;
   isLoading = false;
-  errorMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private clientService: ClientService
+    private clientService: ClientService,
+    private notificationService: NotificationService
   ) {
     this.clientForm = this.fb.group({
       first_name: ['', [Validators.required]],
@@ -49,7 +50,7 @@ export class ClientFormComponent implements OnInit {
         this.clientForm.patchValue(client);
       },
       error: (error) => {
-        this.errorMessage = 'Failed to load client';
+        // Error interceptor handles the notification
         console.error('Error loading client:', error);
       }
     });
@@ -57,11 +58,11 @@ export class ClientFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.clientForm.invalid) {
+      this.notificationService.warning('Please fill in all required fields correctly.');
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
     const clientData: Client = this.clientForm.value;
 
@@ -71,10 +72,12 @@ export class ClientFormComponent implements OnInit {
 
     operation.subscribe({
       next: (client) => {
+        const message = this.isEditMode ? 'Client updated successfully!' : 'Client created successfully!';
+        this.notificationService.success(message);
         this.router.navigate(['/clients', client.client_id]);
       },
       error: (error) => {
-        this.errorMessage = this.isEditMode ? 'Failed to update client' : 'Failed to create client';
+        // Error interceptor handles the notification
         this.isLoading = false;
         console.error('Error saving client:', error);
       }

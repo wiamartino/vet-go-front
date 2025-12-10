@@ -14,6 +14,7 @@ export interface AuthResponse {
   status: string;
   data: {
     token: string;
+    refresh_token?: string;
     user?: any;
   };
 }

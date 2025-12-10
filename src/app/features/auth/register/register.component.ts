@@ -22,8 +22,8 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.registerForm = this.fb.group({
-      first_name: ['', [Validators.required]],
-      last_name: ['', [Validators.required]],
+      name: ['', [Validators.required]],
+      // last_name: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
@@ -61,13 +61,13 @@ export class RegisterComponent {
     });
   }
 
-  get firstName() {
-    return this.registerForm.get('first_name');
+  get name() {
+    return this.registerForm.get('name');
   }
 
-  get lastName() {
-    return this.registerForm.get('last_name');
-  }
+  // get lastName() {
+  //   return this.registerForm.get('last_name');
+  // }
 
   get email() {
     return this.registerForm.get('email');

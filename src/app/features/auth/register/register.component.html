@@ -8,78 +8,49 @@
         Register for the Veterinary Management System
       </p>
     </div>
-    
+
     <form class="mt-8 space-y-6" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="rounded-md shadow-sm space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
-            <input
-              id="first_name"
-              type="text"
-              formControlName="first_name"
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input id="name" type="text" formControlName="name"
               class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="John"
-            />
-            <div *ngIf="firstName?.invalid && firstName?.touched" class="text-red-600 text-xs mt-1">
-              <span *ngIf="firstName?.errors?.['required']">First name is required</span>
+              placeholder="John" />
+            <div *ngIf="name?.invalid && name?.touched" class="text-red-600 text-xs mt-1">
+              <span *ngIf="name?.errors?.['required']">Name is required</span>
             </div>
           </div>
-          
-          <div>
-            <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
-            <input
-              id="last_name"
-              type="text"
-              formControlName="last_name"
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Doe"
-            />
-            <div *ngIf="lastName?.invalid && lastName?.touched" class="text-red-600 text-xs mt-1">
-              <span *ngIf="lastName?.errors?.['required']">Last name is required</span>
-            </div>
-          </div>
+
         </div>
-        
+
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
+          <input id="email" type="email" formControlName="email"
             class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="john@example.com"
-          />
+            placeholder="john@example.com" />
           <div *ngIf="email?.invalid && email?.touched" class="text-red-600 text-xs mt-1">
             <span *ngIf="email?.errors?.['required']">Email is required</span>
             <span *ngIf="email?.errors?.['email']">Invalid email format</span>
           </div>
         </div>
-        
+
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            id="password"
-            type="password"
-            formControlName="password"
+          <input id="password" type="password" formControlName="password"
             class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="••••••••"
-          />
+            placeholder="••••••••" />
           <div *ngIf="password?.invalid && password?.touched" class="text-red-600 text-xs mt-1">
             <span *ngIf="password?.errors?.['required']">Password is required</span>
             <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
           </div>
         </div>
-        
+
         <div>
           <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            formControlName="confirmPassword"
+          <input id="confirmPassword" type="password" formControlName="confirmPassword"
             class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="••••••••"
-          />
+            placeholder="••••••••" />
           <div *ngIf="confirmPassword?.invalid && confirmPassword?.touched" class="text-red-600 text-xs mt-1">
             <span *ngIf="confirmPassword?.errors?.['required']">Please confirm your password</span>
           </div>
@@ -98,11 +69,8 @@
       </div>
 
       <div>
-        <button
-          type="submit"
-          [disabled]="registerForm.invalid || isLoading"
-          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <button type="submit" [disabled]="registerForm.invalid || isLoading"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
           <span *ngIf="!isLoading">Register</span>
           <span *ngIf="isLoading">Registering...</span>
         </button>

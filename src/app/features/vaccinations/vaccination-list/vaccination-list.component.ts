@@ -63,6 +63,7 @@ export class VaccinationListComponent implements OnInit {
     
     this.vaccinations.forEach(v => {
       const dueDate = new Date(v.next_due_date);
+      if (Number.isNaN(dueDate.getTime())) return;
       if (dueDate < today) this.overdueCount++;
       else if (dueDate <= thirtyDays) this.dueCount++;
     });

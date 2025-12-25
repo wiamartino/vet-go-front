@@ -46,9 +46,9 @@ import { MedicalRecord, Pet, Veterinarian } from '../../../models';
                 </div>
 
                 <div>
-                  <label for="date" class="block text-sm font-medium text-gray-700">Date *</label>
-                  <input type="date" id="date" formControlName="date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
-                  <div *ngIf="date?.invalid && date?.touched" class="mt-1 text-sm text-red-600">Date is required</div>
+                  <label for="visit_date" class="block text-sm font-medium text-gray-700">Visit Date *</label>
+                  <input type="date" id="visit_date" formControlName="visit_date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  <div *ngIf="visitDate?.invalid && visitDate?.touched" class="mt-1 text-sm text-red-600">Visit date is required</div>
                 </div>
 
                 <div>
@@ -58,9 +58,28 @@ import { MedicalRecord, Pet, Veterinarian } from '../../../models';
                 </div>
 
                 <div>
-                  <label for="treatment" class="block text-sm font-medium text-gray-700">Treatment *</label>
-                  <textarea id="treatment" formControlName="treatment" rows="4" placeholder="Describe the treatment plan..." class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border"></textarea>
-                  <div *ngIf="treatment?.invalid && treatment?.touched" class="mt-1 text-sm text-red-600">Treatment is required</div>
+                  <label for="symptoms" class="block text-sm font-medium text-gray-700">Symptoms</label>
+                  <textarea id="symptoms" formControlName="symptoms" rows="3" placeholder="List symptoms..." class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border"></textarea>
+                </div>
+
+                <div>
+                  <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                  <textarea id="notes" formControlName="notes" rows="3" placeholder="Additional notes..." class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label for="weight" class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                    <input type="number" step="0.1" id="weight" formControlName="weight" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  </div>
+                  <div>
+                    <label for="temperature" class="block text-sm font-medium text-gray-700">Temperature (°C)</label>
+                    <input type="number" step="0.1" id="temperature" formControlName="temperature" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  </div>
+                  <div>
+                    <label for="heart_rate" class="block text-sm font-medium text-gray-700">Heart Rate (bpm)</label>
+                    <input type="number" id="heart_rate" formControlName="heart_rate" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  </div>
                 </div>
               </div>
 
@@ -97,9 +116,14 @@ export class MedicalRecordFormComponent implements OnInit {
     this.medicalRecordForm = this.fb.group({
       pet_id: ['', Validators.required],
       veterinarian_id: ['', Validators.required],
-      date: ['', Validators.required],
+      visit_date: ['', Validators.required],
       diagnosis: ['', Validators.required],
-      treatment: ['', Validators.required]
+      symptoms: [''],
+      notes: [''],
+      weight: [''],
+      temperature: [''],
+      heart_rate: [''],
+      appointment_id: ['']
     });
   }
 
@@ -134,15 +158,21 @@ export class MedicalRecordFormComponent implements OnInit {
       this.medicalRecordForm.patchValue({
         pet_id: record.pet_id,
         veterinarian_id: record.veterinarian_id,
-        date: this.formatDateForInput(new Date(record.date)),
+        visit_date: this.formatDateForInput(record.visit_date),
         diagnosis: record.diagnosis,
-        treatment: record.treatment
+        symptoms: record.symptoms,
+        notes: record.notes,
+        weight: record.weight,
+        temperature: record.temperature,
+        heart_rate: record.heart_rate,
+        appointment_id: record.appointment_id
       });
     });
   }
 
-  formatDateForInput(date: Date): string {
-    const d = new Date(date);
+  formatDateForInput(dateString: string | Date): string {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -158,7 +188,8 @@ export class MedicalRecordFormComponent implements OnInit {
       ...this.medicalRecordForm.value,
       pet_id: Number(this.medicalRecordForm.value.pet_id),
       veterinarian_id: Number(this.medicalRecordForm.value.veterinarian_id),
-      date: new Date(this.medicalRecordForm.value.date)
+      appointment_id: this.medicalRecordForm.value.appointment_id ? Number(this.medicalRecordForm.value.appointment_id) : undefined,
+      visit_date: this.medicalRecordForm.value.visit_date
     };
 
     const operation = this.isEditMode
@@ -176,7 +207,6 @@ export class MedicalRecordFormComponent implements OnInit {
 
   get petId() { return this.medicalRecordForm.get('pet_id'); }
   get veterinarianId() { return this.medicalRecordForm.get('veterinarian_id'); }
-  get date() { return this.medicalRecordForm.get('date'); }
+  get visitDate() { return this.medicalRecordForm.get('visit_date'); }
   get diagnosis() { return this.medicalRecordForm.get('diagnosis'); }
-  get treatment() { return this.medicalRecordForm.get('treatment'); }
 }

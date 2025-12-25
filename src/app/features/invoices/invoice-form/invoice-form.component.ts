@@ -134,7 +134,7 @@ export class InvoiceFormComponent implements OnInit {
           appointment_id: invoice.appointment_id,
           total_amount: invoice.total_amount,
           payment_status: invoice.payment_status,
-          issue_date: this.formatDateForInput(new Date(invoice.issue_date))
+          issue_date: this.formatDateForInput(invoice.issue_date)
         });
       },
       error: (error) => {
@@ -144,8 +144,9 @@ export class InvoiceFormComponent implements OnInit {
     });
   }
 
-  formatDateForInput(date: Date): string {
+  formatDateForInput(date: string | Date): string {
     const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -161,7 +162,7 @@ export class InvoiceFormComponent implements OnInit {
       ...this.invoiceForm.value,
       appointment_id: Number(this.invoiceForm.value.appointment_id),
       total_amount: Number(this.invoiceForm.value.total_amount),
-      issue_date: new Date(this.invoiceForm.value.issue_date)
+      issue_date: this.invoiceForm.value.issue_date
     };
 
     const operation = this.isEditMode

@@ -147,14 +147,15 @@ export class VaccinationFormComponent implements OnInit {
         pet_id: vaccination.pet_id,
         veterinarian_id: vaccination.veterinarian_id,
         vaccine_name: vaccination.vaccine_name,
-        date_administered: this.formatDateForInput(new Date(vaccination.date_administered)),
-        next_due_date: this.formatDateForInput(new Date(vaccination.next_due_date))
+        date_administered: this.formatDateForInput(vaccination.date_administered),
+        next_due_date: this.formatDateForInput(vaccination.next_due_date)
       });
     });
   }
 
-  formatDateForInput(date: Date): string {
+  formatDateForInput(date: string | Date): string {
     const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -169,9 +170,7 @@ export class VaccinationFormComponent implements OnInit {
     const vaccinationData: Vaccination = {
       ...this.vaccinationForm.value,
       pet_id: Number(this.vaccinationForm.value.pet_id),
-      veterinarian_id: Number(this.vaccinationForm.value.veterinarian_id),
-      date_administered: new Date(this.vaccinationForm.value.date_administered),
-      next_due_date: new Date(this.vaccinationForm.value.next_due_date)
+      veterinarian_id: Number(this.vaccinationForm.value.veterinarian_id)
     };
 
     const operation = this.isEditMode

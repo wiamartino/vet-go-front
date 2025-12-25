@@ -133,29 +133,28 @@ export class AppointmentFormComponent implements OnInit {
 
   loadAppointment(id: number): void {
     this.appointmentService.getAppointmentById(id).subscribe(appointment => {
-      const date = new Date(appointment.date);
-      const time = new Date(appointment.time);
-
       this.appointmentForm.patchValue({
         pet_id: appointment.pet_id,
         veterinarian_id: appointment.veterinarian_id,
-        date: this.formatDateForInput(date),
-        time: this.formatTimeForInput(time),
+        date: this.formatDateForInput(appointment.date),
+        time: this.formatTimeForInput(appointment.time),
         reason_for_appointment: appointment.reason_for_appointment
       });
     });
   }
 
-  formatDateForInput(date: Date): string {
+  formatDateForInput(date: string | Date): string {
     const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
-  formatTimeForInput(time: Date): string {
+  formatTimeForInput(time: string | Date): string {
     const t = new Date(time);
+    if (Number.isNaN(t.getTime())) return '';
     const hours = String(t.getHours()).padStart(2, '0');
     const minutes = String(t.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -170,8 +169,8 @@ export class AppointmentFormComponent implements OnInit {
     const appointmentData: Appointment = {
       pet_id: Number(formValue.pet_id),
       veterinarian_id: Number(formValue.veterinarian_id),
-      date: new Date(formValue.date),
-      time: new Date(`${formValue.date}T${formValue.time}`),
+      date: formValue.date,
+      time: formValue.time,
       reason_for_appointment: formValue.reason_for_appointment
     };
 

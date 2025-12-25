@@ -3,5 +3,5 @@ export interface Invoice {
   appointment_id: number;
   total_amount: number;
   payment_status: string;
-  issue_date: Date;
+  issue_date: string;
 }

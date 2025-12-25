@@ -6,5 +6,5 @@ export interface Allergy {
   allergen: string;
   reaction: string;
   severity: AllergySeverity;
-  diagnosed_date: Date;
+  diagnosed_date: string;
 }

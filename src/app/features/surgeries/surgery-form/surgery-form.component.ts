@@ -156,15 +156,16 @@ export class SurgeryFormComponent implements OnInit {
         pet_id: surgery.pet_id,
         veterinarian_id: surgery.veterinarian_id,
         surgery_type: surgery.surgery_type,
-        date: this.formatDateForInput(new Date(surgery.date)),
+        date: this.formatDateForInput(surgery.date),
         status: surgery.status,
         notes: surgery.notes
       });
     });
   }
 
-  formatDateForInput(date: Date): string {
+  formatDateForInput(date: string | Date): string {
     const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -180,7 +181,6 @@ export class SurgeryFormComponent implements OnInit {
       ...this.surgeryForm.value,
       pet_id: Number(this.surgeryForm.value.pet_id),
       veterinarian_id: Number(this.surgeryForm.value.veterinarian_id),
-      date: new Date(this.surgeryForm.value.date),
       status: this.surgeryForm.value.status as SurgeryStatus
     };
 

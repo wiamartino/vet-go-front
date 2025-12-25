@@ -52,9 +52,9 @@ import { Pet, Client } from '../../../models';
                 </div>
 
                 <div>
-                  <label for="birth_date" class="block text-sm font-medium text-gray-700">Birth Date *</label>
-                  <input type="date" id="birth_date" formControlName="birth_date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
-                  <div *ngIf="birthDate?.invalid && birthDate?.touched" class="mt-1 text-sm text-red-600">Birth date is required</div>
+                  <label for="date_of_birth" class="block text-sm font-medium text-gray-700">Birth Date *</label>
+                  <input type="date" id="date_of_birth" formControlName="date_of_birth" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  <div *ngIf="dateOfBirth?.invalid && dateOfBirth?.touched" class="mt-1 text-sm text-red-600">Birth date is required</div>
                 </div>
 
                 <div>
@@ -99,7 +99,7 @@ export class PetFormComponent implements OnInit {
       name: ['', Validators.required],
       species: ['', Validators.required],
       breed: ['', Validators.required],
-      birth_date: ['', Validators.required],
+      date_of_birth: ['', Validators.required],
       client_id: ['', Validators.required]
     });
   }
@@ -148,6 +148,6 @@ export class PetFormComponent implements OnInit {
   get name() { return this.petForm.get('name'); }
   get species() { return this.petForm.get('species'); }
   get breed() { return this.petForm.get('breed'); }
-  get birthDate() { return this.petForm.get('birth_date'); }
+  get dateOfBirth() { return this.petForm.get('date_of_birth'); }
   get clientId() { return this.petForm.get('client_id'); }
 }

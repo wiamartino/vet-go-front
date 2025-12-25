@@ -78,14 +78,14 @@ export class AppointmentService extends BaseStoreService<Appointment[]> {
   /**
    * Get appointments by date range with caching
    */
-  getAppointmentsByDateRange(startDate: Date, endDate: Date, forceRefresh = false): Observable<Appointment[]> {
-    const cacheKey = `appointments_range_${startDate.toISOString()}_${endDate.toISOString()}`;
+  getAppointmentsByDateRange(startDate: string, endDate: string, forceRefresh = false): Observable<Appointment[]> {
+    const cacheKey = `appointments_range_${startDate}_${endDate}`;
 
     if (forceRefresh) {
       this.invalidateCache(cacheKey);
     }
 
-    const params = `?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`;
+    const params = `?start_date=${startDate}&end_date=${endDate}`;
     const request = this.http.get<ApiResponse<Appointment[]>>(`${this.apiUrl}${params}`)
       .pipe(map(response => response.data || []));
 
@@ -226,6 +226,7 @@ export class AppointmentService extends BaseStoreService<Appointment[]> {
 
     return this.getCurrentAppointments().filter(appointment => {
       const appointmentDate = new Date(appointment.date);
+      if (Number.isNaN(appointmentDate.getTime())) return false;
       return appointmentDate >= today && appointmentDate < tomorrow;
     });
   }

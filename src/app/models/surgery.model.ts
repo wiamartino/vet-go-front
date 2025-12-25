@@ -4,7 +4,7 @@ export interface Surgery {
   surgery_id?: number;
   pet_id: number;
   surgery_type: string;
-  date: Date;
+  date: string;
   veterinarian_id: number;
   notes: string;
   status: SurgeryStatus;

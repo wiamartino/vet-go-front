@@ -27,8 +27,8 @@ export class InvoiceService {
       .pipe(map(response => response.data || []));
   }
 
-  getInvoicesByDateRange(startDate: Date, endDate: Date): Observable<Invoice[]> {
-    const params = `?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`;
+  getInvoicesByDateRange(startDate: string, endDate: string): Observable<Invoice[]> {
+    const params = `?start_date=${startDate}&end_date=${endDate}`;
     return this.http.get<ApiResponse<Invoice[]>>(`${this.apiUrl}${params}`)
       .pipe(map(response => response.data || []));
   }

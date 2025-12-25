@@ -3,6 +3,6 @@ export interface Pet {
   name: string;
   species: string;
   breed: string;
-  birth_date: Date;
+  date_of_birth: string;
   client_id: number;
 }

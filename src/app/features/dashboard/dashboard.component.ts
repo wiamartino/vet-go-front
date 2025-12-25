@@ -88,7 +88,7 @@ export class DashboardComponent extends CancellableComponent implements OnInit {
 
     this.autoCancel(forkJoin({
       clients: this.clientService.getAllClients(forceRefresh),
-      appointments: this.appointmentService.getAppointmentsByDateRange(today, tomorrow, forceRefresh),
+      appointments: this.appointmentService.getAppointmentsByDateRange(today.toISOString(), tomorrow.toISOString(), forceRefresh),
       vaccinations: this.vaccinationService.getDueVaccinations(),
       surgeries: this.surgeryService.getSurgeriesByStatus('scheduled')
     })).subscribe({

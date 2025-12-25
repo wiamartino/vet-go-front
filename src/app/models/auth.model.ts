@@ -4,10 +4,10 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+  name: string;
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  role?: 'admin' | 'user' | 'veterinarian';
 }
 
 export interface AuthResponse {
@@ -15,13 +15,16 @@ export interface AuthResponse {
   data: {
     token: string;
     refresh_token?: string;
-    user?: any;
+    user?: User;
   };
 }
 
 export interface User {
-  user_id?: number;
+  id?: number;
   email: string;
-  first_name: string;
-  last_name: string;
+  name: string;
+  role?: 'admin' | 'user' | 'veterinarian';
+  created_at?: string;
+  updated_at?: string;
+  last_login?: string;
 }

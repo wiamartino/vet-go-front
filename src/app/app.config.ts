@@ -4,7 +4,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { retryInterceptor } from './core/interceptors/retry.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
@@ -15,10 +15,13 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes), 
     provideClientHydration(),
     provideAnimations(), 
-    provideHttpClient(withInterceptors([
-      authInterceptor, 
-      retryInterceptor,
-      errorInterceptor
-    ]))
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([
+        authInterceptor, 
+        retryInterceptor,
+        errorInterceptor
+      ])
+    )
   ]
 };

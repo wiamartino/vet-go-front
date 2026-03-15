@@ -166,11 +166,16 @@ export class AppointmentFormComponent implements OnInit {
     this.errorMessage = '';
 
     const formValue = this.appointmentForm.value;
+    
+    // Combine date and time into ISO 8601 format for the backend
+    // Backend expects: "2006-01-02T15:04:05Z07:00" format
+    const dateTimeString = `${formValue.date}T${formValue.time}:00Z`;
+    
     const appointmentData: Appointment = {
       pet_id: Number(formValue.pet_id),
       veterinarian_id: Number(formValue.veterinarian_id),
-      date: formValue.date,
-      time: formValue.time,
+      date: dateTimeString,
+      time: dateTimeString,
       reason_for_appointment: formValue.reason_for_appointment
     };
 

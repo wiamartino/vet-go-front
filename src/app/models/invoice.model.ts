@@ -1,7 +1,12 @@
+import { Appointment } from './appointment.model';
+import { Client } from './client.model';
+
 export interface Invoice {
   invoice_id?: number;
   appointment_id: number;
-  total_amount: number;
-  payment_status: string;
-  issue_date: string;
+  client_id: number;
+  total: number;
+  date: string;
+  appointment?: Appointment;
+  client?: Client;
 }

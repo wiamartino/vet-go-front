@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
-import { Invoice, Appointment } from '../../../models';
+import { ClientService } from '../../../core/services/client.service';
+import { Invoice, Appointment, Client } from '../../../models';
 
 @Component({
   selector: 'app-invoice-form',
@@ -27,6 +28,17 @@ import { Invoice, Appointment } from '../../../models';
                 </div>
 
                 <div>
+                  <label for="client_id" class="block text-sm font-medium text-gray-700">Client *</label>
+                  <select id="client_id" formControlName="client_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select client</option>
+                    <option *ngFor="let client of clients" [value]="client.client_id">
+                      {{ client.first_name }} {{ client.last_name }} - {{ client.email }}
+                    </option>
+                  </select>
+                  <div *ngIf="clientId?.invalid && clientId?.touched" class="mt-1 text-sm text-red-600">Client is required</div>
+                </div>
+
+                <div>
                   <label for="appointment_id" class="block text-sm font-medium text-gray-700">Appointment *</label>
                   <select id="appointment_id" formControlName="appointment_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     <option value="">Select appointment</option>
@@ -38,27 +50,15 @@ import { Invoice, Appointment } from '../../../models';
                 </div>
 
                 <div>
-                  <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount ($) *</label>
-                  <input type="number" id="total_amount" formControlName="total_amount" step="0.01" min="0" placeholder="0.00" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
-                  <div *ngIf="totalAmount?.invalid && totalAmount?.touched" class="mt-1 text-sm text-red-600">Total amount is required</div>
+                  <label for="total" class="block text-sm font-medium text-gray-700">Total ($) *</label>
+                  <input type="number" id="total" formControlName="total" step="0.01" min="0" placeholder="0.00" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  <div *ngIf="total?.invalid && total?.touched" class="mt-1 text-sm text-red-600">Total is required</div>
                 </div>
 
                 <div>
-                  <label for="payment_status" class="block text-sm font-medium text-gray-700">Payment Status *</label>
-                  <select id="payment_status" formControlName="payment_status" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">Select status</option>
-                    <option value="pending">Pending</option>
-                    <option value="paid">Paid</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                  <div *ngIf="paymentStatus?.invalid && paymentStatus?.touched" class="mt-1 text-sm text-red-600">Payment status is required</div>
-                </div>
-
-                <div>
-                  <label for="issue_date" class="block text-sm font-medium text-gray-700">Issue Date *</label>
-                  <input type="date" id="issue_date" formControlName="issue_date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
-                  <div *ngIf="issueDate?.invalid && issueDate?.touched" class="mt-1 text-sm text-red-600">Issue date is required</div>
+                  <label for="date" class="block text-sm font-medium text-gray-700">Date *</label>
+                  <input type="date" id="date" formControlName="date" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md px-3 py-2 border" />
+                  <div *ngIf="date?.invalid && date?.touched" class="mt-1 text-sm text-red-600">Date is required</div>
                 </div>
               </div>
 
@@ -78,6 +78,7 @@ import { Invoice, Appointment } from '../../../models';
 export class InvoiceFormComponent implements OnInit {
   invoiceForm: FormGroup;
   appointments: Appointment[] = [];
+  clients: Client[] = [];
   isEditMode = false;
   invoiceId?: number;
   isLoading = false;
@@ -88,31 +89,38 @@ export class InvoiceFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private invoiceService: InvoiceService,
-    private appointmentService: AppointmentService
+    private appointmentService: AppointmentService,
+    private clientService: ClientService
   ) {
     this.invoiceForm = this.fb.group({
+      client_id: ['', Validators.required],
       appointment_id: ['', Validators.required],
-      total_amount: ['', [Validators.required, Validators.min(0)]],
-      payment_status: ['pending', Validators.required],
-      issue_date: ['', Validators.required]
+      total: ['', [Validators.required, Validators.min(0)]],
+      date: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
     this.loadAppointments();
+    this.loadClients();
 
     const id = this.route.snapshot.paramMap.get('id');
     const queryAppointmentId = this.route.snapshot.queryParamMap.get('appointment_id');
+    const queryClientId = this.route.snapshot.queryParamMap.get('client_id');
 
     if (queryAppointmentId) {
       this.invoiceForm.patchValue({ appointment_id: Number(queryAppointmentId) });
     }
 
-    // Set default issue date to today
+    if (queryClientId) {
+      this.invoiceForm.patchValue({ client_id: Number(queryClientId) });
+    }
+
+    // Set default date to today
     if (!id) {
       const today = new Date();
       this.invoiceForm.patchValue({
-        issue_date: this.formatDateForInput(today)
+        date: this.formatDateForInput(today)
       });
     }
 
@@ -127,14 +135,18 @@ export class InvoiceFormComponent implements OnInit {
     this.appointmentService.getAllAppointments().subscribe(appointments => this.appointments = appointments);
   }
 
+  loadClients(): void {
+    this.clientService.getAllClients().subscribe(clients => this.clients = clients);
+  }
+
   loadInvoice(id: number): void {
     this.invoiceService.getInvoiceById(id).subscribe({
       next: (invoice) => {
         this.invoiceForm.patchValue({
+          client_id: invoice.client_id,
           appointment_id: invoice.appointment_id,
-          total_amount: invoice.total_amount,
-          payment_status: invoice.payment_status,
-          issue_date: this.formatDateForInput(invoice.issue_date)
+          total: invoice.total,
+          date: this.formatDateForInput(invoice.date)
         });
       },
       error: (error) => {
@@ -158,11 +170,25 @@ export class InvoiceFormComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
+    // Find the selected client to include full client data
+    const selectedClientId = Number(this.invoiceForm.value.client_id);
+    const selectedClient = this.clients.find(c => c.client_id === selectedClientId);
+
+    if (!selectedClient) {
+      this.errorMessage = 'Please select a valid client';
+      this.isLoading = false;
+      return;
+    }
+
+    // Convert date to ISO 8601 format for backend
+    const dateISO = `${this.invoiceForm.value.date}T00:00:00Z`;
+
     const invoiceData: Invoice = {
-      ...this.invoiceForm.value,
+      client_id: selectedClientId,
       appointment_id: Number(this.invoiceForm.value.appointment_id),
-      total_amount: Number(this.invoiceForm.value.total_amount),
-      issue_date: this.invoiceForm.value.issue_date
+      total: Number(this.invoiceForm.value.total),
+      date: dateISO,
+      client: selectedClient
     };
 
     const operation = this.isEditMode
@@ -178,8 +204,8 @@ export class InvoiceFormComponent implements OnInit {
     });
   }
 
+  get clientId() { return this.invoiceForm.get('client_id'); }
   get appointmentId() { return this.invoiceForm.get('appointment_id'); }
-  get totalAmount() { return this.invoiceForm.get('total_amount'); }
-  get paymentStatus() { return this.invoiceForm.get('payment_status'); }
-  get issueDate() { return this.invoiceForm.get('issue_date'); }
+  get total() { return this.invoiceForm.get('total'); }
+  get date() { return this.invoiceForm.get('date'); }
 }
